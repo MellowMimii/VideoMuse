@@ -1,0 +1,31 @@
+# Web framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+
+# Database
+sqlalchemy[asyncio]==2.0.36
+aiosqlite==0.20.0
+alembic==1.14.1
+
+# Configuration
+pydantic-settings==2.7.1
+
+# LLM
+openai==1.59.4
+
+# Bilibili
+bilibili-api-python==16.3.1
+
+# Whisper (optional, for audio transcription fallback)
+# openai-whisper==20240930
+
+# Task queue
+celery[redis]==5.4.0
+redis==5.2.1
+
+# HTTP client
+httpx==0.28.1
+
+# Utilities
+python-dotenv==1.0.1
