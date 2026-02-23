@@ -19,6 +19,7 @@ class TaskResponse(BaseModel):
     status: str
     progress: float
     error_message: str | None = None
+    completed_step: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -53,5 +54,19 @@ class ReportResponse(BaseModel):
     task_id: int
     content_markdown: str
     created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+# --- Agent Event Schemas ---
+
+class AgentEventResponse(BaseModel):
+    id: int
+    event_type: str
+    content: str
+    tool_name: str | None = None
+    tool_args_json: str | None = None
+    tool_result_preview: str | None = None
+    timestamp: float
 
     model_config = {"from_attributes": True}

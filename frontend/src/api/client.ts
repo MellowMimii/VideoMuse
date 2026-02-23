@@ -18,6 +18,7 @@ export interface Task {
   status: string;
   progress: number;
   error_message: string | null;
+  completed_step: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -41,6 +42,16 @@ export interface Report {
   created_at: string;
 }
 
+export interface AgentEvent {
+  id: number;
+  event_type: "thinking" | "tool_call" | "tool_result" | "error" | "complete";
+  content: string;
+  tool_name: string | null;
+  tool_args_json: string | null;
+  tool_result_preview: string | null;
+  timestamp: number;
+}
+
 export const createTask = (data: TaskCreate) =>
   api.post<Task>("/tasks", data);
 
@@ -58,3 +69,12 @@ export const listTasks = (skip = 0, limit = 20) =>
 
 export const deleteTask = (id: number) =>
   api.delete(`/tasks/${id}`);
+
+export const retryTask = (id: number) =>
+  api.post<Task>(`/tasks/${id}/retry`);
+
+export const cancelTask = (id: number) =>
+  api.post<Task>(`/tasks/${id}/cancel`);
+
+export const getTaskEvents = (id: number, sinceId = 0) =>
+  api.get<AgentEvent[]>(`/tasks/${id}/events`, { params: { since_id: sinceId } });

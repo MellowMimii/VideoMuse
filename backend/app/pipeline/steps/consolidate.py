@@ -7,11 +7,16 @@ from app.pipeline.orchestrator import PipelineStep
 
 logger = logging.getLogger(__name__)
 
+# Maximum total characters for the combined summaries sent to the LLM.
+# This prevents exceeding context window limits when many videos are analyzed.
+MAX_SUMMARIES_CHARS = 60000
+
 
 class ConsolidateStep(PipelineStep):
     name = "consolidate"
 
     async def execute(self, context: PipelineContext) -> None:
+        context.check_cancelled()
         llm = get_llm_provider()
 
         # Build summaries block
@@ -31,6 +36,15 @@ class ConsolidateStep(PipelineStep):
             return
 
         summaries_text = "\n---\n".join(summaries_parts)
+
+        # Truncate if the combined text is too long for the context window
+        if len(summaries_text) > MAX_SUMMARIES_CHARS:
+            logger.warning(
+                "Combined summaries too long (%d chars), truncating to %d",
+                len(summaries_text),
+                MAX_SUMMARIES_CHARS,
+            )
+            summaries_text = summaries_text[:MAX_SUMMARIES_CHARS] + "\n\n...(部分摘要因长度限制被截断)"
 
         prompt = MULTI_VIDEO_CONSOLIDATION.format(
             query=context.query,

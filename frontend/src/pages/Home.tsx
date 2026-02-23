@@ -4,16 +4,20 @@ import { createTask } from "../api/client";
 
 export default function Home() {
   const [query, setQuery] = useState("");
+  const [maxVideos, setMaxVideos] = useState(10);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+  const handleSubmit = async () => {
+    if (!query.trim() || loading) return;
 
     setLoading(true);
     try {
-      const { data } = await createTask({ query: query.trim() });
+      const { data } = await createTask({
+        query: query.trim(),
+        platform: "bilibili",
+        max_videos: maxVideos,
+      });
       navigate(`/tasks/${data.id}`);
     } catch (err) {
       console.error("Failed to create task:", err);
@@ -23,44 +27,60 @@ export default function Home() {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleSubmit();
+  };
+
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", padding: "60px 20px", textAlign: "center" }}>
-      <h1 style={{ fontSize: 48, marginBottom: 8 }}>VideoMuse</h1>
-      <p style={{ color: "#666", marginBottom: 40 }}>
+    <div className="home-hero">
+      <h1>VideoMuse</h1>
+      <p className="subtitle">
         输入你感兴趣的话题，AI 自动分析多个视频并生成结构化报告
       </p>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+      <div className="search-form">
         <input
           type="text"
+          className="input"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="例如：拉萨旅游攻略"
-          style={{
-            flex: 1,
-            maxWidth: 500,
-            padding: "12px 16px",
-            fontSize: 16,
-            border: "1px solid #ddd",
-            borderRadius: 8,
-          }}
+          onKeyDown={handleKeyDown}
+          placeholder="例如：拉萨旅游攻略、Python 入门教程"
         />
         <button
-          type="submit"
+          type="button"
           disabled={loading || !query.trim()}
-          style={{
-            padding: "12px 24px",
-            fontSize: 16,
-            background: loading ? "#ccc" : "#1677ff",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
+          className="btn btn-primary"
+          style={{ padding: "10px 28px", fontSize: 15 }}
+          onClick={handleSubmit}
         >
-          {loading ? "提交中..." : "开始分析"}
+          {loading ? (
+            <>
+              <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
+              提交中...
+            </>
+          ) : (
+            "开始分析"
+          )}
         </button>
-      </form>
+      </div>
+
+      <div className="search-options">
+        <label>
+          分析视频数：
+          <select
+            className="select"
+            value={maxVideos}
+            onChange={(e) => setMaxVideos(Number(e.target.value))}
+            style={{ marginLeft: 4 }}
+          >
+            <option value={5}>5 个</option>
+            <option value={10}>10 个</option>
+            <option value={20}>20 个</option>
+          </select>
+        </label>
+        <span>平台：Bilibili</span>
+      </div>
     </div>
   );
 }

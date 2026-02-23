@@ -28,6 +28,7 @@ class Task(Base):
     )
     progress: Mapped[float] = mapped_column(Float, default=0.0)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    completed_step: Mapped[str | None] = mapped_column(String(50), nullable=True)
     created_at: Mapped[str] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -37,6 +38,7 @@ class Task(Base):
 
     videos: Mapped[list["Video"]] = relationship(back_populates="task", cascade="all, delete-orphan")
     report: Mapped["Report | None"] = relationship(back_populates="task", uselist=False, cascade="all, delete-orphan")
+    agent_events: Mapped[list["AgentEventLog"]] = relationship(back_populates="task", cascade="all, delete-orphan")
 
 
 class Video(Base):
@@ -72,3 +74,21 @@ class Report(Base):
     )
 
     task: Mapped["Task"] = relationship(back_populates="report")
+
+
+class AgentEventLog(Base):
+    __tablename__ = "agent_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    task_id: Mapped[int] = mapped_column(ForeignKey("tasks.id"), nullable=False, index=True)
+    event_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    content: Mapped[str] = mapped_column(Text, default="")
+    tool_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    tool_args_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    tool_result_preview: Mapped[str | None] = mapped_column(Text, nullable=True)
+    timestamp: Mapped[float] = mapped_column(Float, nullable=False)
+    created_at: Mapped[str] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    task: Mapped["Task"] = relationship(back_populates="agent_events")
